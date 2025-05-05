@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Blog Simples</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Meu Blog</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/posts">Artigos</a></li>
+                <li class="auth-link"><a href="/login">Login</a></li>
+                <li class="auth-link"><a href="/register">Registrar</a></li>
+                <li class="auth-link logged-in"><a href="/dashboard">Dashboard</a></li>
+                <li class="auth-link logged-in"><a href="/logout">Sair</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="content">
+            <h2>Bem-vindo ao meu blog!</h2>
+            <p>Aqui você encontrará artigos interessantes sobre diversos temas.</p>
+        </section>
+
+        <section id="posts" class="content">
+            <h2>Artigos Recentes</h2>
+            <div class="post">
+                <h3>Título do Primeiro Artigo</h3>
+                <p class="post-meta">Publicado em 02 de Maio de 2025 por Autor</p>
+                <p>Um breve resumo do primeiro artigo. Este é um espaço para apresentar um pouco do conteúdo.</p>
+                <a href="/posts/primeiro-artigo">Leia mais</a>
+            </div>
+
+            <div class="post">
+                <h3>Outro Artigo Interessante</h3>
+                <p class="post-meta">Publicado em 25 de Abril de 2025 por Outro Autor</p>
+                <p>Resumo do segundo artigo. Aqui podemos ter mais informações sobre o assunto abordado.</p>
+                <a href="/posts/segundo-artigo">Leia mais</a>
+            </div>
+            </section>
+
+        <section id="login" class="content auth-form">
+            <h2>Login</h2>
+            <form id="login-form" method="POST" action="/login">
+                <label for="username">Nome de Usuário:</label>
+                <input type="text" id="username" name="username" required><br><br>
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required><br><br>
+                <button type="submit">Entrar</button>
+            </form>
+        </section>
+
+        <section id="register" class="content auth-form">
+            <h2>Registrar</h2>
+            <form id="register-form" method="POST" action="/register">
+                <label for="new-username">Nome de Usuário:</label>
+                <input type="text" id="new-username" name="new-username" required><br><br>
+                <label for="new-email">Email:</label>
+                <input type="email" id="new-email" name="new-email" required><br><br>
+                <label for="new-password">Senha:</label>
+                <input type="password" id="new-password" name="new-password" required><br><br>
+                <button type="submit">Registrar</button>
+            </form>
+        </section>
+
+        <section id="dashboard" class="content protected">
+            <h2>Painel de Controle</h2>
+            <p>Bem-vindo ao seu painel! Aqui você poderá gerenciar seus artigos.</p>
+            <ul>
+                <li><a href="/new-post">Novo Artigo</a></li>
+                <li><a href="/edit-posts">Editar Artigos</a></li>
+            </ul>
+        </section>
+
+        <section id="logout-message" class="content protected">
+            <h2>Você saiu!</h2>
+            <p>Obrigado por visitar nosso blog.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Meu Blog Simples</p>
+    </footer>
+
+    <script>
+        const loggedIn = false;
+        const authLinks = document.querySelectorAll('.auth-link');
+        const loggedInLinks = document.querySelectorAll('.logged-in');
+        const protectedSections = document.querySelectorAll('.protected');
+        const authForms = document.querySelectorAll('.auth-form');
+        const homeSection = document.getElementById('home');
+        const postsSection = document.getElementById('posts');
+        const logoutMessageSection = document.getElementById('logout-message');
+        const dashboardSection = document.getElementById('dashboard');
+        const loginSection = document.getElementById('login');
+        const registerSection = document.getElementById('register');
+
+        function updateAuthVisibility() {
+            authLinks.forEach(link => link.style.display = loggedIn ? 'none' : 'inline');
+            loggedInLinks.forEach(link => link.style.display = loggedIn ? 'inline' : 'none');
+            protectedSections.forEach(section => section.style.display = loggedIn ? 'block' : 'none');
+            authForms.forEach(form => form.style.display = loggedIn ? 'none' : 'block');
+            logoutMessageSection.style.display = 'none';
+            if (!loggedIn) {
+                dashboardSection.style.display = 'none';
+            }
+        }
+
+        function handleNavigation() {
+            const path = window.location.pathname;
+            homeSection.style.display = path === '/' ? 'block' : 'none';
+            postsSection.style.display = path === '/posts' || path.startsWith('/posts/') ? 'block' : 'none';
+            loginSection.style.display = path === '/login' ? 'block' : 'none';
+            registerSection.style.display = path === '/register' ? 'block' : 'none';
+            dashboardSection.style.display = path === '/dashboard' ? 'block' : 'none';
+            logoutMessageSection.style.display = path === '/logout-message' ? 'block' : 'none';
+            updateAuthVisibility();
+        }
+
+        window.addEventListener('load', handleNavigation);
+        window.addEventListener('popstate', handleNavigation);
+
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const href = this.getAttribute('href');
+                history.pushState(null, '', href);
+                handleNavigation();
+            });
+        });
+
+        document.getElementById('register-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('new-username');
+            const emailInput = document.getElementById('new-email');
+            const passwordInput = document.getElementById('new-password');
+
+            const userData = {
+                'new-username': usernameInput.value,
+                'new-email': emailInput.value,
+                'new-password': passwordInput.value
+            };
+
+            fetch('http://localhost:3000/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta do servidor (registro):', data);
+                if (data.message === 'Usuario criado com sucesso') {
+                    alert('Registro realizado com sucesso!');
+                    // Redirecionar para a página de artigos após o registro
+                    window.location.href = '/posts';
+                } else if (data.message === 'Email já cadastrado') {
+                    alert('Este email já está cadastrado.');
+                } else if (data.message === 'Campos não preenchidos') {
+                    alert('Por favor, preencha todos os campos.');
+                } else {
+                    alert('Erro ao registrar o usuário.');
+                }
+            })
+            .catch((error) => {
+                console.error('Erro ao enviar dados de registro:', error);
+                alert('Ocorreu um erro ao tentar registrar.');
+            });
+        });
+
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+
+            const loginData = {
+                username: usernameInput.value,
+                password: passwordInput.value
+            };
+
+            fetch('/login', { // Ajuste a URL se necessário
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta do servidor (login):', data);
+                if (data.message === 'Login realizado com sucesso') {
+                    // Redirecionar para a página de artigos após o login
+                    window.location.href = '/posts';
+                } else {
+                    alert('Falha ao fazer login. Verifique suas credenciais.');
+                }
+            })
+            .catch((error) => {
+                console.error('Erro ao enviar dados de login:', error);
+                alert('Ocorreu um erro ao tentar fazer login.');
+            });
+        });
+
+        document.querySelectorAll('nav a[href="/logout"]').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                console.log('Simulação de logout (você implementará a lógica real no backend).');
+                loggedIn = false;
+                history.pushState(null, '', '/logout-message');
+                handleNavigation();
+            });
+        });
+    </script>
+</body>
+</html>

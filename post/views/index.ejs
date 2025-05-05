@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Mural de Posts</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        .post {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .post-actions form {
+            display: inline;
+            margin-right: 5px;
+        }
+        .post-actions button {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Meu Mural de Posts</h1>
+
+    <div id="post-form">
+        <textarea id="new-post-text" placeholder="Escreva seu post aqui..."></textarea>
+        <button onclick="adicionarPost()">Adicionar Post</button>
+    </div>
+
+    <div id="posts-container">
+        </div>
+
+    <script>
+        let nextPostId = 1; // Simula um ID sequencial para os posts
+
+        function adicionarPost() {
+            const postText = document.getElementById('new-post-text').value;
+            if (postText.trim() !== "") {
+                const postsContainer = document.getElementById('posts-container');
+                const postId = nextPostId++;
+                const newPostDiv = document.createElement('div');
+                newPostDiv.classList.add('post');
+                newPostDiv.dataset.postId = postId; // Armazena o ID do post no elemento
+                newPostDiv.innerHTML = `
+                    <p>${postText}</p>
+                    <div class="post-actions">
+                        <form method="PUT" action="" onsubmit="atualizarPost(event, this)">
+                            <input type="hidden" name="postId" value="${postId}">
+                            <button type="submit">Atualizar</button>
+                        </form>
+                        <form method="DELETE" action="" onsubmit="deletarPost(event, this)">
+                            <input type="hidden" name="postId" value="${postId}">
+                            <button type="submit">Deletar</button>
+                        </form>
+                    </div>
+                `;
+                postsContainer.prepend(newPostDiv);
+                document.getElementById('new-post-text').value = "";
+            } else {
+                alert("Por favor, escreva algo no seu post.");
+            }
+        }
+
+        function atualizarPost(event, formAtualizar) {
+            event.preventDefault(); // Impede a submissão padrão do formulário
+
+            const postId = formAtualizar.querySelector('input[name="postId"]').value;
+            const postDiv = formAtualizar.parentNode.parentNode;
+            const paragrafoPost = postDiv.querySelector('p');
+            const novoTexto = prompt("Digite o novo texto para o post:", paragrafoPost.textContent);
+
+            if (novoTexto !== null && novoTexto.trim() !== "") {
+                paragrafoPost.textContent = novoTexto;
+                // *** AQUI VOCÊ IMPLEMENTARÁ A SUA LÓGICA PARA FAZER A REQUISIÇÃO PUT PARA O SEU ENDPOINT ***
+                console.log('Simulando atualização do post com ID:', postId, 'e novo texto:', novoTexto);
+                // Exemplo de como você *poderia* começar (adapte para seus endpoints e lógica):
+                // fetch(`/api/posts/${postId}`, {
+                //     method: 'PUT',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ text: novoTexto }),
+                // })
+                // .then(response => response.json())
+                // .then(data => console.log('Resposta do servidor:', data))
+                // .catch(error => console.error('Erro ao atualizar:', error));
+            }
+        }
+
+        function deletarPost(event, formDeletar) {
+            event.preventDefault(); // Impede a submissão padrão do formulário
+
+            const postId = formDeletar.querySelector('input[name="postId"]').value;
+            const postDiv = formDeletar.parentNode.parentNode;
+
+            if (confirm("Tem certeza que deseja deletar este post?")) {
+                postDiv.remove();
+                // *** AQUI VOCÊ IMPLEMENTARÁ A SUA LÓGICA PARA FAZER A REQUISIÇÃO DELETE PARA O SEU ENDPOINT ***
+                console.log('Simulando deleção do post com ID:', postId);
+                // Exemplo de como você *poderia* começar (adapte para seus endpoints e lógica):
+                // fetch(`/api/posts/${postId}`, {
+                //     method: 'DELETE',
+                // })
+                // .then(response => response.text())
+                // .then(data => console.log('Resposta do servidor:', data))
+                // .catch(error => console.error('Erro ao deletar:', error));
+            }
+        }
+    </script>
+</body>
+</html>

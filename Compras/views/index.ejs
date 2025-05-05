@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compras</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <h1>Loja de Compras</h1>
+
+    <!-- Formulário para adicionar produto -->
+    <form id="addProductForm">
+        <label for="productName">Nome do Produto:</label>
+        <input type="text" id="productName" name="productName" required>
+        <label for="quantity">Quantidade:</label>
+        <input type="number" id="quantity" name="quantity" required>
+        <button type="submit">Adicionar Produto</button>
+    </form>
+
+    <h2>Carrinho</h2>
+    <ul id="cart"></ul>
+
+    <script>
+        // Função para carregar o carrinho ao abrir a página
+        async function loadCart() {
+            try {
+                const response = await fetch('/get-cart'); // Rota para obter os itens do carrinho
+                const data = await response.json();
+                if (response.ok) {
+                    data.cart.forEach(produto => updateCart(produto)); // Atualiza o carrinho visualmente
+                }
+            } catch (error) {
+                console.error('Erro ao carregar o carrinho:', error);
+            }
+        }
+    
+        // Chama a função para carregar o carrinho ao abrir a página
+        loadCart();
+    
+        // Função para adicionar produto ao carrinho
+        document.getElementById('addProductForm').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Evita o recarregamento da página
+    
+            const productName = document.getElementById('productName').value;
+            const quantity = document.getElementById('quantity').value;
+    
+            try {
+                const response = await fetch('/add-to-cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ productName, quantity })
+                });
+    
+                const data = await response.json();
+                if (response.ok) {
+                    alert(data.message); // Exibe mensagem de sucesso
+                    updateCart(data.produto); // Atualiza o carrinho
+                } else {
+                    alert(data.error); // Exibe mensagem de erro
+                }
+            } catch (error) {
+                console.error('Erro ao adicionar produto:', error);
+            }
+        });
+    
+        // Função para atualizar o carrinho visualmente
+        function updateCart(produto) {
+            const cartElement = document.getElementById('cart');
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${produto.productName} - Quantidade: ${produto.quantity}
+                <button onclick="deleteProduct('${produto.productName}')">Deletar</button>
+                <button onclick="updateProduct('${produto.productName}')">Atualizar</button>
+            `;
+            cartElement.appendChild(li);
+        }
+    
+        // Função para deletar produto
+        async function deleteProduct(productName) {
+            try {
+                const response = await fetch('/delete-product', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ productName })
+                });
+    
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message); // Exibe mensagem de sucesso
+                    location.reload(); // Recarrega a página para atualizar o carrinho
+                } else {
+                    alert(data.error); // Exibe mensagem de erro
+                }
+            } catch (error) {
+                console.error('Erro ao deletar produto:', error);
+            }
+        }
+    
+        // Função para atualizar produto
+        async function updateProduct(productName) {
+            const newQuantity = prompt(`Digite a nova quantidade para ${productName}:`);
+            if (!newQuantity) return;
+    
+            try {
+                const response = await fetch('/update-product', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ productName, quantity: newQuantity })
+                });
+    
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message); // Exibe mensagem de sucesso
+                    location.reload(); // Recarrega a página para atualizar o carrinho
+                } else {
+                    alert(data.error); // Exibe mensagem de erro
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar produto:', error);
+            }
+        }
+    </script>
+</body>
+</html>
